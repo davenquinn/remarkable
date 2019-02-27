@@ -1,0 +1,11 @@
+{
+  "name": "remarkable",
+  "version": "0.1.0",
+  "description": "Helpers for programmatically generated remark.js presentations",
+  "main": "index.coffee",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

@@ -15,5 +15,8 @@
     "react-dom": "^16.8.3",
     "react-hyperscript": "^3.2.0",
     "react-pdf": "^4.0.3"
+  },
+  "bin": {
+    "remark": "bin/cli.js"
   }
 }

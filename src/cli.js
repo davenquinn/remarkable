@@ -7,6 +7,10 @@ const chalk = require('chalk');
 const program = require('commander');
 const version = require('../package.json').version;
 
+// Add some sort of window var
+global.window = {};
+global.document = {};
+
 program.version(version);
 
 program
@@ -217,13 +221,15 @@ async function bundle(main, command) {
     };
   }
 
-  command.throwErrors = false;
+  command.throwErrors = true;
   command.scopeHoist = command.experimentalScopeHoisting || false;
 
   let bundler = new Bundler(main, command);
 
   // Add custom asset types
-  bundler.addAssetType('.md', require.resolve("./assets/markdownSlidesAsset"));
+  const fn = require.resolve("./assets/markdownSlidesAsset.js");
+  console.log(fn);
+  bundler.addAssetType('mdslides', fn);
 
   command.target = command.target || 'browser';
   if (command.name() === 'serve' && command.target === 'browser') {

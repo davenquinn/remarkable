@@ -1,6 +1,5 @@
 const path = require('path');
 const Asset = require('parcel-bundler/src/Asset');
-const localRequire = require('parcel-bundler/src/utils/localRequire');
 
 class MarkdownSlidesAsset extends Asset {
   constructor(name, options) {
@@ -10,10 +9,15 @@ class MarkdownSlidesAsset extends Asset {
   }
 
   async generate() {
-    const parse = require('remark/src/parse');
-
-    const compiled = parse(this.contents);
-    return JSON.stringify(compiled);
+    const {parseSlides} = require('remark');
+    const compiled = parseSlides(this.contents);
+    console.log(compiled);
+    return [
+      {
+        type: 'json',
+        value: JSON.stringify(compiled)
+      }
+    ];
   }
 }
 

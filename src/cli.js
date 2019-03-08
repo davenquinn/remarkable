@@ -229,7 +229,7 @@ async function bundle(main, command) {
   // Add custom asset types
   const fn = require.resolve("./assets/markdownSlidesAsset.js");
   console.log(fn);
-  bundler.addAssetType('mdslides', fn);
+  bundler.parser.extensions['md'] = fn;
 
   command.target = command.target || 'browser';
   if (command.name() === 'serve' && command.target === 'browser') {

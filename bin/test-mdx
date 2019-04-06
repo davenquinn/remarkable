@@ -1,0 +1,7 @@
+#!/usr/bin/env node
+const fs = require("fs");
+const {createSlides} = require('../src/helpers/mdx');
+
+const content = fs.readFileSync("test/test.mdx", 'utf-8');
+console.log(createSlides(content));
+

@@ -7,10 +7,6 @@ const chalk = require('chalk');
 const program = require('commander');
 const version = require('../package.json').version;
 
-// Add some sort of window var
-global.window = {};
-global.document = {};
-
 program.version(version);
 
 program
@@ -201,6 +197,7 @@ program.parse(args);
 
 async function bundle(main, command) {
   // Require bundler here so the help command is fast
+  console.log("Creating bundler");
   const Bundler = require('parcel-bundler');
 
   if (command.name() === 'watch') {
@@ -228,8 +225,11 @@ async function bundle(main, command) {
 
   // Add custom asset types
   const fn = require.resolve("./assets/markdownSlidesAsset.js");
-  console.log(fn);
-  bundler.parser.extensions['md'] = fn;
+  bundler.parser.extensions['.md'] = fn;
+
+  require("./assets/mdxSlidesAsset.js")
+  const fn2 = require.resolve("./assets/mdxSlidesAsset.js");
+  bundler.addAssetType('mdx',fn2);
 
   command.target = command.target || 'browser';
   if (command.name() === 'serve' && command.target === 'browser') {

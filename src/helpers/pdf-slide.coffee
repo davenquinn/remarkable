@@ -23,10 +23,11 @@ PDFSlide = (file, opts={})->
   {renderer}
 
 PDFSlides = (file, opts={})->
-  p = pdfjs.getDocument(file).promise
+  doc = pdfjs.getDocument(file)
+  pdf = await doc.promise
+  {numPages} = pdf._pdfInfo
 
   renderFunc = (pageNumber)->(el, cb)->
-    pdf = await p
     onLoadSuccess = ->
       console.log "Loaded #{file}"
     main = h Page, {pdf, pageNumber, width: 908, renderAnnotationLayer: null}
@@ -34,7 +35,7 @@ PDFSlides = (file, opts={})->
     el.style.padding = 0
 
   {pages} = opts
-  pages ?= [1,2]
+  pages ?= [1..numPages]
   for page in pages
     renderer = renderFunc(page)
     {renderer}

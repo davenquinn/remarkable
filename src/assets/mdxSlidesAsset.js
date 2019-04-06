@@ -22,8 +22,6 @@ class MDXSlidesAsset extends Asset {
 import mdx from '@mdx-js/react/dist/create-element.js';
 ${compiled}
 `
-
-    console.log(fullCode);
     return [
       {
         type: 'js',

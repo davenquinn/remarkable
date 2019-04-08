@@ -24,6 +24,13 @@ WebviewFrame = styled.div"""
   overflow: hidden;
 """
 
+InlineWebview = (props)->
+  {src, outerWidth, innerWidth, scale, height, width, fill, rest...} = props
+  height ?= 300
+  width ?= 733.333
+  style = {overflow: 'hidden', height, display: 'block'}
+  h Iframe, {url: src, style, height, width, rest...}
+
 Webview = (props)->
   {src, outerWidth, innerWidth, rest...} = props
   top = null
@@ -54,4 +61,4 @@ class Layout extends React.Component
   render: ->
     h 'div.__layout-slide', @props
 
-export {ColoredBackground, TitleSlide, Webview, Shout, Layout}
+export {ColoredBackground, TitleSlide, Webview, Shout, Layout, InlineWebview}

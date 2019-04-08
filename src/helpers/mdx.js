@@ -1,6 +1,8 @@
 const visit = require('unist-util-visit')
 const is = require('unist-util-is')
 const mdxAstToMdxHast = require('@mdx-js/mdx/mdx-ast-to-mdx-hast')
+const matter = require('gray-matter')
+const stringifyObject = require('stringify-object')
 
 // custom implementation
 // this can be removed in favor of https://github.com/mdx-js/mdx/issues/454
@@ -14,12 +16,20 @@ const toJSX = (node, parent, opts = {}) => {
   if (node.type === 'root') {
     const jsxNodes = []
     let layout = ''
+    let extraParams = []
 
     for (const child of node.children) {
       // imports/exports should already be handled for the root mdx component
       if (child.type === 'import') continue
       if (child.type === 'export') {
-        if (!child.default) continue
+        if (!child.default) {
+          name = child.value
+            .replace(/^export\s+const\s+/, '')
+            .replace(/\s*=/,':')
+            .replace(/;\s*$/, '')
+          extraParams.push(name)
+          continue
+        }
         layout = child.value
           .replace(/^export\s+default\s+/, '')
           .replace(/;\s*$/, '')
@@ -29,14 +39,16 @@ const toJSX = (node, parent, opts = {}) => {
     }
 
     return [
-      '(props => {',
+      '{ component: (props => {',
       `  const __MDXDECK_LAYOUT__ = ${layout ? layout : '"div"'}`,
       '  return <__MDXDECK_LAYOUT__',
       '    name="wrapper"',
       '    components={props.components}>',
       '    ' + jsxNodes.map(child => toJSX(child, node)).join('\n    '),
       '  </__MDXDECK_LAYOUT__>',
-      '})',
+      '  }),',
+      `  ${extraParams.join(',\n  ')}`,
+      '}',
     ]
       .filter(Boolean)
       .join('\n')

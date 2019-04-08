@@ -9,7 +9,7 @@ const stringifyObject = require('stringify-object')
 const toTemplateLiteral = text =>
   '{`' + text.replace(/\\/g, '\\\\').replace(/`/g, '\\`') + '`}'
 
-const toJSX = (node, parent, opts = {}) => {
+const toJSX = (node, parent, opts = {}, properties = {}) => {
   const { preserveNewlines = false } = opts
   let children = ''
 
@@ -47,6 +47,7 @@ const toJSX = (node, parent, opts = {}) => {
       '    ' + jsxNodes.map(child => toJSX(child, node)).join('\n    '),
       '  </__MDXDECK_LAYOUT__>',
       '  }),',
+      `  properties: ${JSON.stringify(properties)},`,
       `  ${extraParams.join(',\n  ')}`,
       '}',
     ]
@@ -98,15 +99,19 @@ const toJSX = (node, parent, opts = {}) => {
 
 const delimiter = 'thematicBreak'
 
-module.exports = (opts = {}) => {
+const mdxPlugin = (opts = {}) => {
   return (tree, file) => {
     const { children } = tree
     const splits = []
     const slides = []
 
     visit(tree, node => {
-      console.log(node);
+      // Thematic break is ---
       if (is(delimiter, node)) {
+        const i = children.indexOf(node)
+        splits.push(i)
+      }
+      if (node.value && node.value === '--') {
         const i = children.indexOf(node)
         splits.push(i)
       }
@@ -116,18 +121,26 @@ module.exports = (opts = {}) => {
 
     for (let i = 0; i < splits.length; i++) {
       const split = splits[i]
+
       slides.push(children.slice(previousSplit, split))
-      previousSplit = split + 1
+      previousSplit = split
     }
 
     slides.push(children.slice(previousSplit))
 
     const jsx = slides.map(slide => {
+      const startNode = slide[0]
+      let continued;
+      if (startNode && startNode.value == '--') {
+        continued = 'true';
+      } else {
+        continued = 'false';
+      }
       const hast = mdxAstToMdxHast()({
         type: 'root',
-        children: slide,
+        children: slide.slice(1),
       })
-      const code = toJSX(hast, {}, { skipExport: true })
+      const code = toJSX(hast, {}, { skipExport: true }, {continued})
       return code
     })
 
@@ -138,3 +151,5 @@ module.exports = (opts = {}) => {
     })
   }
 }
+
+module.exports = {mdxPlugin};

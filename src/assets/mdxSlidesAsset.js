@@ -1,7 +1,7 @@
 const {Asset} = require('parcel-bundler')
 const {getOptions} = require('loader-utils')
 const mdx = require('@mdx-js/mdx')
-const mdxPlugin = require('../helpers/mdx')
+const {mdxPlugin} = require('../helpers/mdx')
 
 class MDXSlidesAsset extends Asset {
   constructor(name, pkg, options) {
@@ -22,7 +22,6 @@ import mdx from '@mdx-js/react/dist/create-element.js';
 ${compiled}
 `
 
-    console.log(fullCode);
     return [
       {
         type: 'js',

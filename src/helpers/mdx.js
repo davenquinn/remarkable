@@ -3,6 +3,7 @@ const is = require('unist-util-is')
 const mdxAstToMdxHast = require('@mdx-js/mdx/mdx-ast-to-mdx-hast')
 const matter = require('gray-matter')
 const stringifyObject = require('stringify-object')
+const mdx = require('@mdx-js/mdx')
 
 // custom implementation
 // this can be removed in favor of https://github.com/mdx-js/mdx/issues/454
@@ -152,4 +153,17 @@ const mdxPlugin = (opts = {}) => {
   }
 }
 
-module.exports = {mdxPlugin};
+const createSlides = async (content, options={})=> {
+  options.remarkPlugins = options.mdPlugins || []
+  options.remarkPlugins.push(mdxPlugin)
+
+  const compiled = await mdx(content, options)
+  // This kinda abuses compilation
+  const fullCode = `/* @jsx mdx */
+import mdx from '@mdx-js/react/dist/create-element.js';
+${compiled}
+`
+  return fullCode
+}
+
+module.exports = {mdxPlugin, createSlides};

@@ -47,18 +47,39 @@ Webview = (props)->
   ]
 
 Shout = styled.div"""
-  font-size: 1.4em;
-  font-weight: 600;
-  background-color: #444;
-  color: #fff;
+  font-size: 1.2em;
+  background-color: #eee;
   font-style: italic;
-  border-radius: 0.2em;
-  text-align: center;
+  border-radius: 0.1em;
   padding: 0.5em 2em;
+"""
+
+Big = styled.div"""
+font-size: 1.4em;
+margin-bottom: 0.5em;
+"""
+
+Lh = styled(Big)"""
+  font-size: 1.2em;
+  margin: 1em 0 0.5em;
 """
 
 class Layout extends React.Component
   render: ->
     h 'div.__layout-slide', @props
 
-export {ColoredBackground, TitleSlide, Webview, Shout, Layout, InlineWebview}
+Img = (props)->
+  h 'div', (
+    h 'img', props
+  )
+
+__img = styled.img"""
+  margin: 2em auto;
+  display: block;
+"""
+
+CenteredImage = (props)->
+  h __img, props
+
+export {ColoredBackground, TitleSlide, Webview,
+        Shout, Layout, InlineWebview, CenteredImage, Big, Lh, Img}

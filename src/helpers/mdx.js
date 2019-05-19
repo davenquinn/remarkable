@@ -27,14 +27,32 @@ const isContinuedDelimiter = node => {
   return (el.type === 'text') && (el.value === '--');
 };
 
-const toJSX = (node, parent, opts = {}, properties = {}) => {
+const isNotesDelimiter = node => {
+  if (!is_('paragraph', node)) { return false; }
+  if (node.children == null) { return false; }
+  if ((node.children.length == null) || (node.children.length !== 1)) { return false; }
+  const el = node.children[0];
+  return (el.type === 'text') && (el.value === '???');
+};
+
+
+const toJSX = (node, parent, notes, opts = {}, properties = {}) => {
   const { preserveNewlines = false } = opts
   let children = ''
+
+  if (notes != null) {
+    notes.type = 'notes'
+    notes = toJSX(notes, {})
+  }
 
   if (node.type === 'root') {
     const jsxNodes = []
     let layout = ''
     let extraParams = []
+
+    if (notes != null) {
+      extraParams.push(notes)
+    }
 
     for (const child of node.children) {
       // imports/exports should already be handled for the root mdx component
@@ -56,8 +74,6 @@ const toJSX = (node, parent, opts = {}, properties = {}) => {
       jsxNodes.push(child)
     }
 
-    console.log(extraParams);
-
     return [
       '{ component: (props => {',
       `  const __MDXDECK_LAYOUT__ = ${layout ? layout : '"div"'}`,
@@ -75,10 +91,24 @@ const toJSX = (node, parent, opts = {}, properties = {}) => {
       .join('\n')
   }
 
+  if (node.type === 'notes') {
+    return [
+      'notes: (props => {',
+      '  return <div',
+      '    name="wrapper"',
+      '    components={props.components}>',
+      '    ' + node.children.map(child => toJSX(child, node)).join('\n    '),
+      '  </div>',
+      '  })',
+    ]
+      .filter(Boolean)
+      .join('\n')
+  }
+
   if (node.children) {
     children = node.children
       .map(child => {
-        return toJSX(child, node, {
+        return toJSX(child, node, null, {
           preserveNewlines: preserveNewlines || node.tagName === 'pre',
         })
       })
@@ -157,11 +187,22 @@ const mdxPlugin = (opts = {}) => {
       } else {
         continued = 'false';
       }
+
+      let notes  = null;
+      const noteIndex = slide.findIndex(isNotesDelimiter)
+      if (noteIndex != -1) {
+        notes = slide.splice(noteIndex);
+        notes = mdxAstToMdxHast()({
+          type: 'root',
+          children: notes.slice(1)
+        })
+      }
+
       const hast = mdxAstToMdxHast()({
         type: 'root',
         children: slide.slice(1),
       })
-      const code = toJSX(hast, {}, { skipExport: true }, {continued})
+      const code = toJSX(hast, {}, notes, { skipExport: true }, {continued})
       return code
     })
 

@@ -179,14 +179,8 @@ const mdxPlugin = (opts = {}) => {
 
     slides.push(children.slice(previousSplit))
 
+    let currentSlide = []
     const jsx = slides.map(slide => {
-      const startNode = slide[0]
-      let continued;
-      if (startNode && isContinuedDelimiter(startNode)) {
-        continued = 'true';
-      } else {
-        continued = 'false';
-      }
 
       let notes  = null;
       const noteIndex = slide.findIndex(isNotesDelimiter)
@@ -198,11 +192,19 @@ const mdxPlugin = (opts = {}) => {
         })
       }
 
+      const startNode = slide[0]
+      if (startNode && isContinuedDelimiter(startNode)) {
+        currentSlide = currentSlide.concat(slide.slice(1))
+      } else {
+        currentSlide = slide.slice(1);
+      }
+      const children = currentSlide.slice(0)
+
       const hast = mdxAstToMdxHast()({
         type: 'root',
-        children: slide.slice(1),
+        children: children,
       })
-      const code = toJSX(hast, {}, notes, { skipExport: true }, {continued})
+      const code = toJSX(hast, {}, notes, { skipExport: true }, {})
       return code
     })
 

@@ -1,5 +1,5 @@
 const visit = require('unist-util-visit')
-const is = require('unist-util-is')
+const is_ = require('unist-util-is')
 const mdxAstToMdxHast = require('@mdx-js/mdx/mdx-ast-to-mdx-hast')
 const matter = require('gray-matter')
 const stringifyObject = require('stringify-object')
@@ -9,6 +9,23 @@ const mdx = require('@mdx-js/mdx')
 // this can be removed in favor of https://github.com/mdx-js/mdx/issues/454
 const toTemplateLiteral = text =>
   '{`' + text.replace(/\\/g, '\\\\').replace(/`/g, '\\`') + '`}'
+
+// I hate javascript
+/*
+isContinuedDelimiter = (node) ->
+  return false unless is_('paragraph', node)
+  return false unless node.children?
+  return false unless (node.children.length? and node.children.length == 1)
+  el = node.children[0]
+  return el.type == 'text' and el.value == '--'
+*/
+const isContinuedDelimiter = node => {
+  if (!is_('paragraph', node)) { return false; }
+  if (node.children == null) { return false; }
+  if ((node.children.length == null) || (node.children.length !== 1)) { return false; }
+  const el = node.children[0];
+  return (el.type === 'text') && (el.value === '--');
+};
 
 const toJSX = (node, parent, opts = {}, properties = {}) => {
   const { preserveNewlines = false } = opts
@@ -38,6 +55,8 @@ const toJSX = (node, parent, opts = {}, properties = {}) => {
       }
       jsxNodes.push(child)
     }
+
+    console.log(extraParams);
 
     return [
       '{ component: (props => {',
@@ -108,11 +127,12 @@ const mdxPlugin = (opts = {}) => {
 
     visit(tree, node => {
       // Thematic break is ---
-      if (is(delimiter, node)) {
+      if (is_(delimiter, node)) {
         const i = children.indexOf(node)
         splits.push(i)
       }
-      if (node.value && node.value === '--') {
+
+      if (isContinuedDelimiter(node)) {
         const i = children.indexOf(node)
         splits.push(i)
       }
@@ -132,7 +152,7 @@ const mdxPlugin = (opts = {}) => {
     const jsx = slides.map(slide => {
       const startNode = slide[0]
       let continued;
-      if (startNode && startNode.value == '--') {
+      if (startNode && isContinuedDelimiter(startNode)) {
         continued = 'true';
       } else {
         continued = 'false';
@@ -160,7 +180,8 @@ const createSlides = async (content, options={})=> {
   const compiled = await mdx(content, options)
   // This kinda abuses compilation
   const fullCode = `/* @jsx mdx */
-import mdx from '@mdx-js/react/dist/create-element.js';
+import React from 'react';
+import { mdx } from '@mdx-js/react'
 ${compiled}
 `
   return fullCode

@@ -35,6 +35,12 @@ const isNotesDelimiter = node => {
   return (el.type === 'text') && (el.value === '???');
 };
 
+const isExportLayout = node => {
+  if (node.type != 'export') { return false; }
+  return /^export\s+(const|let)\s+layout\s*=\s*true\s*;?$/.test(node.value)
+}
+
+let layoutSlide = [];
 
 const toJSX = (node, parent, notes, opts = {}, properties = {}) => {
   const { preserveNewlines = false } = opts
@@ -46,7 +52,7 @@ const toJSX = (node, parent, notes, opts = {}, properties = {}) => {
   }
 
   if (node.type === 'root') {
-    const jsxNodes = []
+    const jsxNodes = layoutSlide.slice(0)
     let layout = ''
     let extraParams = []
 
@@ -180,7 +186,10 @@ const mdxPlugin = (opts = {}) => {
     slides.push(children.slice(previousSplit))
 
     let currentSlide = []
-    const jsx = slides.map(slide => {
+    let currentLayoutSlide = []
+    let jsx = []
+
+    for (slide of slides) {
 
       let notes  = null;
       const noteIndex = slide.findIndex(isNotesDelimiter)
@@ -192,12 +201,22 @@ const mdxPlugin = (opts = {}) => {
         })
       }
 
+      let exportLayout = false
+      for ([i,node] of slide.entries()) {
+        if (isExportLayout(node)) {
+          currentLayoutSlide = slide.slice(1)
+          exportLayout = true
+        }
+      }
+      if (exportLayout) { continue }
+
       const startNode = slide[0]
       if (startNode && isContinuedDelimiter(startNode)) {
         currentSlide = currentSlide.concat(slide.slice(1))
       } else {
-        currentSlide = slide.slice(1);
+        currentSlide = currentLayoutSlide.concat(slide.slice(1));
       }
+
       const children = currentSlide.slice(0)
 
       const hast = mdxAstToMdxHast()({
@@ -205,8 +224,8 @@ const mdxPlugin = (opts = {}) => {
         children: children,
       })
       const code = toJSX(hast, {}, notes, { skipExport: true }, {})
-      return code
-    })
+      jsx.push(code)
+    }
 
     tree.children.push({
       type: 'export',
@@ -216,9 +235,22 @@ const mdxPlugin = (opts = {}) => {
   }
 }
 
+const removeExportsPlugin = (opts = {}) => {
+  return (tree, file) => {
+    const { children } = tree
+    const splits = []
+    const slides = []
+
+    tree.children = tree.children.filter( d => {
+      return !isExportLayout(d)
+    })
+  }
+}
+
 const createSlides = async (content, options={})=> {
   options.remarkPlugins = options.mdPlugins || []
   options.remarkPlugins.push(mdxPlugin)
+  options.remarkPlugins.push(removeExportsPlugin)
 
   const compiled = await mdx(content, options)
   // This kinda abuses compilation

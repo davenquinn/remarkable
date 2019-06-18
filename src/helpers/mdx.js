@@ -40,6 +40,12 @@ const isExportLayout = node => {
   return /^export\s+(const|let)\s+layout\s*=\s*true\s*;?$/.test(node.value)
 }
 
+const isBooleanExport = node => {
+  if (node.type != 'export') { return false; }
+  return /^export\s+(const|let)\s+\w+\s*=\s*true\s*;?$/.test(node.value)
+}
+
+
 let layoutSlide = [];
 
 const toJSX = (node, parent, notes, opts = {}, properties = {}) => {
@@ -241,8 +247,9 @@ const removeExportsPlugin = (opts = {}) => {
     const splits = []
     const slides = []
 
+    /* This is a pretty awful hack */
     tree.children = tree.children.filter( d => {
-      return !isExportLayout(d)
+      return !isBooleanExport(d)
     })
   }
 }

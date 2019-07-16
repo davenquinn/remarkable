@@ -2,8 +2,7 @@
   "name": "remarkable",
   "version": "0.1.0",
   "description": "Helpers for programmatically generated remark.js presentations",
-  "main": "src/index.coffee",
-  "source": "src/index.coffee",
+  "main": "lib/remarkable.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "preinstall": "linklocal"
@@ -16,6 +15,9 @@
     "@mdx-deck/mdx-plugin": "^2.0.9",
     "@mdx-js/mdx": "^1.0.0-rc.0",
     "@mdx-js/react": "^1.0.0-alpha.12",
+    "babel-eslint": "^10.0.2",
+    "core-js": "^3.1.4",
+    "eslint": "^6.0.1",
     "gray-matter": "^4.0.2",
     "parcel-plugin-markdown-string": "^1.3.4",
     "pdfjs": "^2.1.0",
@@ -33,8 +35,15 @@
     "remark": "bin/cli.js"
   },
   "devDependencies": {
+    "@babel/core": "^7.5.4",
+    "@babel/plugin-proposal-class-properties": "^7.5.0",
+    "@babel/preset-env": "^7.5.4",
+    "@babel/preset-react": "^7.0.0",
     "@mdx-js/parcel-plugin-mdx": "^0.20.3",
+    "babel-loader": "^8.0.6",
     "coffee-loader": "^0.9.0",
+    "css-loader": "^3.0.0",
+    "eslint-loader": "^2.2.1",
     "node-sass": "^4.12.0",
     "sass-loader": "^7.1.0",
     "style-loader": "^0.23.1",

@@ -5,7 +5,8 @@ const nodeExternals = require('webpack-node-externals');
 const babelLoader = {
   loader: 'babel-loader',
   options: {
-    presets: ['@babel/preset-env', '@babel/preset-react']
+    presets: ['@babel/preset-env', '@babel/preset-react'],
+    plugins: ['@babel/plugin-proposal-class-properties']
   }
 }
 
@@ -15,7 +16,6 @@ const frontendConfig = {
   entry: {
     remarkable: __dirname + '/src/index.coffee'
   },
-  watch: false,
   output: {
     path: path.resolve(__dirname, 'lib'),
     publicPath: '/assets',
